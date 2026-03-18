@@ -1,7 +1,7 @@
 # ESME-PBL2
 # **📦 \[Loser Wins!]**
 
-**MVP Status:** \[e.g., v1.0-Production]
+**MVP Status:** \[v1.0]
 
 **Group Members:** Raphaël Dussart, Clovis Bogdan de Badereau, Damien du Bourguet, Zahed Al-Kassous, Gabriel Barbier
 
