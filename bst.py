@@ -7,7 +7,7 @@ class Node:
 
 class LowBidBST:
     def __init__(self):
-        """initializes an empty BST."""
+        """Initializes an empty binary search tree for managing auction bids."""
         self.root = None
 
     def insert(self, price, bidder):
@@ -31,22 +31,19 @@ class LowBidBST:
                     current.right = Node(price, bidder)
                     break
                 current = current.right
-
-    def in_order_traversal(self):
-        """Iterative in-order traversal using a stack to return sorted auction state."""
-        result = []
-        stack = []
+                
+    def search(self, price):
+        """Searches for a price in the BST and returns the node if found, otherwise None."""
         current = self.root
-        
-        while stack or current:
-            while current:
-                stack.append(current)
+        while current:
+            if price == current.price:
+                return current
+            elif price < current.price:
                 current = current.left
-            current = stack.pop()
-            result.append({"price": current.price, "bidders": current.bidders})
-            current = current.right
-        return result
-
+            else:
+                current = current.right
+        return None
+    
     def delete(self, price):
         """Iteratively deletes a price node from the BST."""
         parent = None
@@ -92,3 +89,66 @@ class LowBidBST:
                 p_parent.left = successor.right
             else:
                 p_parent.right = successor.right
+                
+    def find_min(self):
+        """Returns the node with the minimum price in the BST, or None if the tree is empty."""
+        if self.root is None:
+            return None
+        current = self.root
+        while current.left:
+            current = current.left
+        return current
+
+    def find_max(self):
+        """Returns the node with the maximum price in the BST, or None if the tree is empty."""
+        if self.root is None:
+            return None
+        current = self.root
+        while current.right:
+            current = current.right
+        return current
+    
+    def successor(self, price):
+        """
+        Returns the node with the smallest price greater than the given price,
+        or None if no such price exists.
+        """
+        current = self.root
+        successor = None
+        while current:
+            if current.price > price:
+                successor = current
+                current = current.left
+            else:
+                current = current.right
+        return successor
+    
+    def predecessor(self, price):
+        """
+        Returns the node with the largest price less than the given price,
+        or None if no such price exists.
+        """
+        current = self.root
+        predecessor = None
+        while current:
+            if current.price < price:
+                predecessor = current
+                current = current.right
+            else:
+                current = current.left
+        return predecessor
+
+    def in_order_traversal(self):
+        """Iterative in-order traversal using a stack to return sorted auction state."""
+        result = []
+        stack = []
+        current = self.root
+        
+        while stack or current:
+            while current:
+                stack.append(current)
+                current = current.left
+            current = stack.pop()
+            result.append({"price": current.price, "bidders": current.bidders})
+            current = current.right
+        return result
