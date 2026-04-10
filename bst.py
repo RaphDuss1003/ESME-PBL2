@@ -82,7 +82,7 @@ class LowBidBST:
 
             # Replace current node data with successor data
             current.price = successor.price
-            current.bidders = successor.bidders
+            current.bidders = successor.bidders[:]
 
             # Remove the successor node
             if p_parent.left == successor:
@@ -149,6 +149,25 @@ class LowBidBST:
                 stack.append(current)
                 current = current.left
             current = stack.pop()
-            result.append({"price": current.price, "bidders": current.bidders})
+            result.append({"price": current.price, "bidders": current.bidders[:]})
             current = current.right
         return result
+
+    def lowest_unique_bid(self):
+        """Returns the lowest unique bid and its bidder, or None if there is no winner."""
+        stack = []
+        current = self.root
+
+        while stack or current:
+            while current:
+                stack.append(current)
+                current = current.left
+
+            current = stack.pop()
+
+            if len(current.bidders) == 1:
+                return {"price": current.price, "bidder": current.bidders[0]}
+
+            current = current.right
+
+        return None
