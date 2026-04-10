@@ -23,12 +23,12 @@ class LowBidBST:
                 break
             elif price < current.price:
                 if current.left is None:
-                    current.left = Node(price, bidder)
+                    current.left = Node(price, bidder) # type: ignore
                     break
                 current = current.left
             else:
                 if current.right is None:
-                    current.right = Node(price, bidder)
+                    current.right = Node(price, bidder) # type: ignore
                     break
                 current = current.right
                 

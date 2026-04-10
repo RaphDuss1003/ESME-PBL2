@@ -1,0 +1,40 @@
+QWidget {
+    font-family: "Segoe UI", Arial;
+    font-size: 14px;
+}
+
+#mainScreen QLabel {
+    color: black;
+}
+
+#mainScreen QLabel#titleLabel {
+    font-size: 36px;
+    font-weight: bold;
+}
+
+#mainScreen QLabel#subtitleLabel {
+    font-size: 18px;
+    color: gray;
+}
+
+#mainScreen QPushButton {
+    background-color: rgba(59,130,246,0.9);
+    color: white;
+    border-radius: 15px;
+    padding: 14px 26px;
+    font-size: 18px;
+    border: none;
+}
+
+#mainScreen QPushButton:hover {
+    background-color: rgba(20, 0, 174, 0.95);
+}
+
+#mainScreen QPushButton:pressed {
+    background-color: rgb(11, 0, 132);
+}
+
+#mainScreen QLabel#infoLabel {
+    font-size: 16px;
+    color: #333;
+}
