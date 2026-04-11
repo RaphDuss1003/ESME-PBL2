@@ -28,18 +28,18 @@ def load_csv(filepath):
         reader = csv.DictReader(f)
         reader.fieldnames = [name.strip().lower() for name in reader.fieldnames]  # Normalize header names: strip whitespaces and lowercases
         
-        round_col = _find_column(reader.fieldnames, ["manche", "tour"])
+        round_col  = _find_column(reader.fieldnames, ["manche", "tour"])
         player_col = _find_column(reader.fieldnames, ["joueur", "player"])
-        price_col = _find_column(reader.fieldnames, ["prix", "price"])
+        price_col  = _find_column(reader.fieldnames, ["prix", "price"])
         
         if round_col is None or player_col is None or price_col is None:
             print(f"Error: CSV must have a round column, a player column, and a price column.")
             return {}
         
         for line_number, row in enumerate(reader, start=2):
-            round = row.get(round_col, "").strip()
+            round  = row.get(round_col, "").strip()
             player = row.get(player_col, "").strip()
-            price = row.get(price_col, "").strip()
+            price  = row.get(price_col, "").strip()
 
             if not round or not player or not price:
                 print(f"Warning: line {line_number} skipped (missing round, player or price).")
@@ -62,7 +62,74 @@ def load_csv(filepath):
             rounds[round_number].append({"player": player, "price": bid})
         
         return rounds
+    
+def load_single_round(filepath):
+    """
+    Read a single-round CSV file (no manche column) and return a list of bids: [{"player": str, "price": int}, ...]
+    Returns an empty list if the file cannot be read or contains bad data.
+    """
+    if not os.path.exists(filepath):
+        print(f"Error: file not found: {filepath}")
+        return []
 
+    bids = []
+
+    with open(filepath, newline="", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        reader.fieldnames = [name.strip().lower() for name in reader.fieldnames]
+
+        player_col = _find_column(reader.fieldnames, ["joueur", "player"])
+        price_col  = _find_column(reader.fieldnames, ["prix", "price"])
+
+        if player_col is None or price_col is None:
+            print(f"Error: CSV must have a player column and a price column.")
+            return []
+
+        for line_number, row in enumerate(reader, start=2):
+            player = row.get(player_col, "").strip()
+            price  = row.get(price_col,  "").strip()
+
+            if not player or not price:
+                print(f"Warning: line {line_number} skipped (missing player or price).")
+                continue
+
+            if not price.lstrip("-").isdigit():
+                print(f"Warning: line {line_number} skipped (price must be an integer, got {price}).")
+                continue
+
+            bid = int(price)
+
+            if bid < 0:
+                print(f"Warning: line {line_number} skipped (price must be >= 0, got {bid}).")
+                continue
+
+            bids.append({"player": player, "price": bid})
+
+    return bids
+
+def detect_and_load(filepath):
+    """
+    Looks at the first line of the CSV to detect its format (single or multi-round), then call the
+    appropriate loader automatically.
+ 
+    Returns:
+        ("multi-rounds",  rounds_dict)  if a manche/round column is detected.
+        ("single-round", bids_list)    if no manche column is found.
+        (None, None)         if the file cannot be opened.
+    """
+    if not os.path.exists(filepath):
+        print(f"Error: file not found: {filepath}")
+        return None, None
+ 
+    with open(filepath, newline="", encoding="utf-8") as f:
+        first_line = f.readline().strip().lower()
+ 
+    if "manche" in first_line or "round" in first_line or "tour" in first_line:
+        return "multi", load_csv(filepath)
+    else:
+        return "single", load_single_round(filepath)
+
+# ============================== DEMO DATA ============================== (will be removed as simulator file exists)
 def generate_demo_bids(n_players=40, max_price=99, seed=None):
     """
     Generate a synthetic single-round dataset with n_players players.
@@ -91,17 +158,34 @@ def load_round_into_bst(rounds, round_number):
         tree.insert(bid["price"], bid["player"])
     return tree, bids
 
+def load_single_round_into_bst(bids):
+    """Given a bids list from load_single_round, insert all bids into a new BST and return it."""
+    tree = LowBidBST()
+    for bid in bids:
+        tree.insert(bid["price"], bid["player"])
+    return tree, bids
+
 # ============================== DISPLAY ==============================
 
 def display_summary(rounds):
-    """Print a short summary of the loaded dataset."""
+    """Print a short summary of the loaded CSV file."""
     if not rounds:
-        print("  No rounds to display.")
+        print("No rounds to display.")
         return
     total_bids = sum(len(bids) for bids in rounds.values())
     print(f"Rounds loaded : {len(rounds)}")
     print(f"Total bids    : {total_bids}")
     print(f"Bids/round    : {total_bids / len(rounds):.1f}")
+
+def display_single_summary(bids):
+    """Print a short summary of a single-round CSV file."""
+    if not bids:
+        print("No bids to display.")
+        return
+    prices = [b["price"] for b in bids]
+    print(f"Players loaded : {len(bids)}")
+    print(f"Price range    : {min(prices)} - {max(prices)}")
+    print(f"Avg price      : {sum(prices) / len(prices):.2f}")
 
 def display_bst(tree):
     """Print the BST state using in_order_traversal (sorted prices)."""
@@ -114,7 +198,7 @@ def display_bst(tree):
 
 # ============================== MAIN TEST ==============================
 
-if __name__ == "__main__":
+"""if __name__ == "__main__":
     # 1. Hardcode your path here (using 'r' for raw string to handle backslashes)
     CSV_PATH = r"APP_lowbid_data\lowbid_multi_manches_500x40.csv"
 
@@ -149,4 +233,4 @@ if __name__ == "__main__":
         display_bst(tree)
 
     else:
-        print("Invalid choice. Please run the script again.")
+        print("Invalid choice. Please run the script again.")"""

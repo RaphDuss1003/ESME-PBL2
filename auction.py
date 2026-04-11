@@ -1,6 +1,5 @@
 from bst import LowBidBST
 
-
 class LowBidAuction:
     def __init__(self, base_cost=1.0, alpha=10.0):
         self.base_cost = base_cost

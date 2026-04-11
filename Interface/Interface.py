@@ -22,21 +22,39 @@ class Interface(QWidget):
         self.subtitle.setObjectName("subtitleLabel")                    # Assigns a style name for QSS
         self.subtitle.setAlignment(Qt.AlignCenter)                      # Centers the label text
 
-        self.btn_load = QPushButton("Load CSV")                         # Button to load a CSV file
-        self.btn_demo = QPushButton("Generate Demo Data")               # Button to generate demo data
-        self.btn_reset = QPushButton("Reset Auction")                   # Button to reset the auction
-        self.btn_run = QPushButton("Run Full Analysis")                 # Button to run the full analysis
+        self.btn_load                = QPushButton("Load CSV")                         
+        self.btn_load_round          = QPushButton("Load Round")                 # Button to load a specific round from the loaded CSV
+        self.btn_demo                = QPushButton("Generate Demo Data")               
+        self.btn_place_bid           = QPushButton("Place Bid")                                           
+        self.btn_analyse_rounds      = QPushButton("Analyse CSV rounds")    
+        self.btn_simulate_strategies = QPushButton("Simulate Strategies")           
+        self.btn_summary             = QPushButton("Show Summary")               # Button to show summary of loaded data
+        self.btn_reset               = QPushButton("Reset Auction")                    
         
         self.btn_exit = QPushButton("Exit")                             # Button to exit the application
         self.btn_exit.clicked.connect(self.close)                       # Connects the button to the window close function
 
+        self.spinbox_round = QSpinBox()                                 # Spin box to select round number 
+        self.spinbox_round.setMinimum(1)
+        self.spinbox_round.setMaximum(500)
+
+        self.spinbox_bid = QSpinBox()                                   # Spin box to select bid price 
+        self.spinbox_bid.setMinimum(0)
+        self.spinbox_bid.setMaximum(999)
+
         buttons_layout = QVBoxLayout()                                  # Creates a vertical layout for the buttons
         buttons_layout.setAlignment(Qt.AlignCenter)                     # Centers the layout content
-        buttons_layout.addWidget(self.btn_load)                         # Adds the Load button
-        buttons_layout.addWidget(self.btn_demo)                         # Adds the Demo button
-        buttons_layout.addWidget(self.btn_reset)                        # Adds the Reset button
-        buttons_layout.addWidget(self.btn_run)                          # Adds the Run button
-        buttons_layout.addWidget(self.btn_exit)                         # Adds the Exit button
+        buttons_layout.addWidget(self.btn_load)                                             
+        buttons_layout.addWidget(self.btn_load_round) 
+        buttons_layout.addWidget(self.spinbox_round)                  
+        buttons_layout.addWidget(self.btn_demo)     
+        buttons_layout.addWidget(self.btn_place_bid)
+        buttons_layout.addWidget(self.spinbox_bid)                    
+        buttons_layout.addWidget(self.btn_reset)                        
+        buttons_layout.addWidget(self.btn_analyse_rounds)   
+        buttons_layout.addWidget(self.btn_simulate_strategies)                       
+        buttons_layout.addWidget(self.btn_summary)                      
+        buttons_layout.addWidget(self.btn_exit)                         
 
         self.dataset_label = QLabel("Dataset: none loaded")             # Label showing dataset status
         self.dataset_label.setObjectName("infoLabel")                   # Style name for QSS
@@ -70,8 +88,8 @@ class Interface(QWidget):
         self.setStyleSheet(open("Interface/style.qss").read())          # Loads and applies the QSS stylesheet
 
 
-if __name__ == "__main__":
+"""if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = Interface()
     window.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec_())"""
