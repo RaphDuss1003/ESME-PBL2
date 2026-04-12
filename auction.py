@@ -1,14 +1,21 @@
 from bst import LowBidBST
 
 class LowBidAuction:
+    """
+    Implements the low-bid auction logic using a binary search tree to manage the bids.
+    Each bid has a cost based on the price and a risk premium (alpha/(price+1)).
+    The auction can compute the winner (lowest unique bid) and the total revenue for the seller.
+    The auction also provides methods to analyze the bids, such as price distribution and average cost per player.
+    """
+
     def __init__(self, base_cost=1.0, alpha=10.0):
         self.base_cost = base_cost
-        self.alpha = alpha
-        self.bst = LowBidBST()
-        self.bids = []
+        self.alpha     = alpha
+        self.bst       = LowBidBST()
+        self.bids      = []
 
     def bid_cost(self, price):
-        """Returns the cost of one bid using the risk premium formula."""
+        """Returns the cost of one bid using the risk premium formula from the instructions."""
         return self.base_cost + self.alpha / (price + 1)
 
     def add_bid(self, bidder, price):
@@ -26,10 +33,16 @@ class LowBidAuction:
         return self.bst.lowest_unique_bid()
 
     def seller_revenue(self):
-        """Returns the total revenue collected from all bids."""
-        total = 0
-        for bidder, price in self.bids:
-            total += self.bid_cost(price)
+        """
+        Returns the total revenue collected from all bids (bids cost + winning price).
+        If there is no winner, the winning price is 0.
+        """
+        total = sum(self.bid_cost(price) for bidder, price in self.bids)
+ 
+        winner = self.get_winner()
+        if winner:
+            total += winner["price"]
+ 
         return total
 
     def total_bids(self):
@@ -44,12 +57,12 @@ class LowBidAuction:
         return distribution
 
     def average_cost_per_player(self):
-        """Returns the average total amount paid per player."""
+        """Returns the average total amount paid per player as they bid."""
         if not self.bids:
             return 0
 
         costs = {}
         for bidder, price in self.bids:
-            costs[bidder] = costs.get(bidder, 0) + self.bid_cost(price)
+            costs[bidder] = costs.get(bidder, 0) + self.bid_cost(price) 
 
         return sum(costs.values()) / len(costs) 

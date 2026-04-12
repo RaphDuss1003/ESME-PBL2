@@ -1,11 +1,23 @@
 class Node:
+    """
+    Represents a node in the binary search tree (BST) for managing auction bids.
+    Each node contains a price, a list of bidders at that price, and references to left and right child nodes.
+    """
+
     def __init__(self, price, bidder):
         self.price = price           # The BST key
         self.bidders = [bidder]      # List for multiple players at the same price
-        self.left = None
-        self.right = None
+        self.left = None             # Left subtree (lower prices)
+        self.right = None            # Right subtree (higher prices)
 
 class LowBidBST:
+    """
+    Implements a binary search tree to manage bids in the low-bid auction.
+    The BST allows efficient insertion of bids, searching for prices, and finding the lowest unique bid.
+    It also provides methods for in-order traversal to get a sorted view of the auction state.
+    The BST is designed to handle multiple bidders at the same price by storing a list of bidders in each node.
+    """
+
     def __init__(self):
         """Initializes an empty binary search tree for managing auction bids."""
         self.root = None
@@ -23,12 +35,12 @@ class LowBidBST:
                 break
             elif price < current.price:
                 if current.left is None:
-                    current.left = Node(price, bidder) # type: ignore
+                    current.left = Node(price, bidder) 
                     break
                 current = current.left
             else:
                 if current.right is None:
-                    current.right = Node(price, bidder) # type: ignore
+                    current.right = Node(price, bidder) 
                     break
                 current = current.right
                 
@@ -139,7 +151,10 @@ class LowBidBST:
         return predecessor
 
     def in_order_traversal(self):
-        """Iterative in-order traversal using a stack to return sorted auction state."""
+        """
+        Iterative in-order traversal using a stack to return sorted auction state.
+        Returns a list of dicts with price and bidders, sorted by price.
+        """
         result = []
         stack = []
         current = self.root

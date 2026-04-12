@@ -11,22 +11,23 @@ def _find_column(fieldnames, candidates):
             return candidate
     return None
 
-# ============================== LOADERS ==============================
+# ===================================================== LOADERS =====================================================
 
 def load_csv(filepath):
     """
     Read a multi-round CSV file and return a dictionary: {"round": [{"player": str, "price": int}, ...], ...}
     Returns an empty dictionary if the file cannot be read or contains bad data.
     """
+
     if not os.path.exists(filepath):
         print(f"Error: file not found: {filepath}")
         return {}
     
     rounds = {}
 
-    with open(filepath, newline="", encoding="utf-8") as f:
+    with open(filepath, newline="", encoding="utf-8") as f:                       # newline tells Python not to do any automatic newline translation when reading the file
         reader = csv.DictReader(f)
-        reader.fieldnames = [name.strip().lower() for name in reader.fieldnames]  # Normalize header names: strip whitespaces and lowercases
+        reader.fieldnames = [name.strip().lower() for name in reader.fieldnames]  # Normalizes header names: strip whitespaces and lowercases
         
         round_col  = _find_column(reader.fieldnames, ["manche", "tour"])
         player_col = _find_column(reader.fieldnames, ["joueur", "player"])
@@ -37,15 +38,15 @@ def load_csv(filepath):
             return {}
         
         for line_number, row in enumerate(reader, start=2):
-            round  = row.get(round_col, "").strip()
+            round  = row.get(round_col, "").strip()                               # Strips whitespace (extra spaces, tabs)
             player = row.get(player_col, "").strip()
             price  = row.get(price_col, "").strip()
 
-            if not round or not player or not price:
+            if not round or not player or not price:                              # Checks for missing values in any of the required columns
                 print(f"Warning: line {line_number} skipped (missing round, player or price).")
                 continue
 
-            if not round.isdigit() or not price.lstrip("-").isdigit():
+            if not round.isdigit() or not price.lstrip("-").isdigit():            # Checks that the round and the price are integers
                 print(f"Warning: line {line_number} skipped. Round and price must be integers, got {round} and {price}.")
                 continue
 
@@ -128,22 +129,25 @@ def detect_and_load(filepath):
         return "multi", load_csv(filepath)
     else:
         return "single", load_single_round(filepath)
+    
 
-# ============================== DEMO DATA ============================== (will be removed as simulator file exists)
-def generate_demo_bids(n_players=40, max_price=99, seed=None):
+# ===================================================== DEMO DATA ===================================================== 
+
+
+def generate_demo_bids(nb_players=40, max_price=99, seed=None):
     """
-    Generate a synthetic single-round dataset with n_players players.
+    Generate a synthetic single-round dataset with nb_players players.
     Prices are drawn uniformly from [0, max_price].
     """
-    rng = random.Random(seed)
+    random_nd_gen = random.Random(seed)                   # Seed is None so each demo is different
     bids = []
-    for i in range(1, n_players + 1):
+    for i in range(1, nb_players + 1):
         player = f"J{i}"
-        price  = rng.randint(0, max_price)
+        price  = random_nd_gen.randint(0, max_price)
         bids.append({"player": player, "price": price})
     return bids
 
-# ============================== BST BUILDING ==============================
+# ===================================================== BST BUILDING =====================================================
 
 def load_round_into_bst(rounds, round_number):
     """ Given the rounds dict from load_csv, insert all bids of the given round into a new BST and return it. """
@@ -165,24 +169,15 @@ def load_single_round_into_bst(bids):
         tree.insert(bid["price"], bid["player"])
     return tree, bids
 
-# ============================== DISPLAY ==============================
-
-def display_summary(rounds):
-    """Print a short summary of the loaded CSV file."""
-    if not rounds:
-        print("No rounds to display.")
-        return
-    total_bids = sum(len(bids) for bids in rounds.values())
-    print(f"Rounds loaded : {len(rounds)}")
-    print(f"Total bids    : {total_bids}")
-    print(f"Bids/round    : {total_bids / len(rounds):.1f}")
+# ===================================================== DISPLAY =====================================================
 
 def display_single_summary(bids):
     """Print a short summary of a single-round CSV file."""
     if not bids:
         print("No bids to display.")
         return
-    prices = [b["price"] for b in bids]
+    
+    prices = [bid["price"] for bid in bids]
     print(f"Players loaded : {len(bids)}")
     print(f"Price range    : {min(prices)} - {max(prices)}")
     print(f"Avg price      : {sum(prices) / len(prices):.2f}")
@@ -190,47 +185,10 @@ def display_single_summary(bids):
 def display_bst(tree):
     """Print the BST state using in_order_traversal (sorted prices)."""
     nodes = tree.in_order_traversal()
+
     if not nodes:
         print("BST is empty.")
         return
     for node in nodes:
         print(f"Price: {node['price']} | Bidders: {', '.join(node['bidders'])}")
 
-# ============================== MAIN TEST ==============================
-
-"""if __name__ == "__main__":
-    # 1. Hardcode your path here (using 'r' for raw string to handle backslashes)
-    CSV_PATH = r"APP_lowbid_data\lowbid_multi_manches_500x40.csv"
-
-    print("=== LowBid System Menu ===")
-    print("1. Load data from CSV")
-    print("2. Generate demo round")
-    choice = input("Select an option (1 or 2): ").strip()
-
-    if choice == "1":
-        print(f"\n[data_loader] Loading: {CSV_PATH}")
-        rounds = load_csv(CSV_PATH)
-        
-        if rounds:
-            display_summary(rounds)
-            
-            # Ask for round number and convert to int for the dictionary lookup
-            raw_round = input("\nEnter round number to view (e.g., 1): ").strip()
-            if raw_round.isdigit():
-                round_num = int(raw_round)
-                print(f"\n[data_loader] BST for round {round_num}:")
-                tree, bids = load_round_into_bst(rounds, round_num)
-                display_bst(tree)
-            else:
-                print("Error: Please enter a valid number.")
-
-    elif choice == "2":
-        print("\n[data_loader] Generating demo data...")
-        bids = generate_demo_bids(seed=0)
-        tree = LowBidBST()
-        for bid in bids:
-            tree.insert(bid["price"], bid["player"])
-        display_bst(tree)
-
-    else:
-        print("Invalid choice. Please run the script again.")"""

@@ -1,5 +1,5 @@
 """
-simulator.py - Simulator for aalysing strategies
+Simulator for analysing strategies.
 
 This file has two distinct modes:
 
@@ -12,7 +12,7 @@ MODE 1 — CSV Analysis:
         - The most common winning prices
 
     Usage:
-        results = simulate_csv(rounds, base_cost, alpha)
+        results = analyse_csv(rounds, base_cost, alpha)
 
 MODE 2 — Strategy Simulation:
     Generates synthetic rounds where each player follows a strategy defined
@@ -32,12 +32,13 @@ or printed to the console.
 
 from auction import LowBidAuction
 from data_loader import load_round_into_bst
-from strategies import random_strategy, cost_aware_strategy, adaptive_strategy
+from strategies import random_strategy, low_cost_strategy, adaptive_strategy
 
 
-# ========================== MODE 1 — CSV Analysis ==========================
+# ============================================== MODE 1 — CSV Analysis ==============================================
 
-def simulate_csv(rounds, base_cost=1.0, alpha=10.0):
+
+def analyse_csv(rounds, base_cost=1.0, alpha=10.0):
     """
     Loops through all rounds from the CSV data, build an auction for each, and collect statistics.
 
@@ -47,12 +48,12 @@ def simulate_csv(rounds, base_cost=1.0, alpha=10.0):
 
     Returns a dict with aggregate statistics.
     """
-    total_rounds = len(rounds)
-    rounds_with_winner = 0
+    total_rounds          = len(rounds)
+    rounds_with_winner    = 0
     rounds_without_winner = 0
-    total_revenue = 0.0
-    total_winning_price = 0
-    winning_prices = []
+    total_revenue         = 0.0
+    total_winning_price   = 0
+    winning_prices        = []
 
     for round_number in range(1, total_rounds + 1):
         tree, bids = load_round_into_bst(rounds, round_number)           # Load the round into a BST and get the list of bids
@@ -61,18 +62,18 @@ def simulate_csv(rounds, base_cost=1.0, alpha=10.0):
         for bid in bids:
             auction.add_bid(bid["player"], bid["price"])
 
-        winner = auction.get_winner()
-        revenue = auction.seller_revenue()
+        winner         = auction.get_winner()
+        revenue        = auction.seller_revenue()
         total_revenue += revenue                                         # Accumulate total revenue from the bids across all rounds
 
         if winner:
-            rounds_with_winner += 1
+            rounds_with_winner  += 1
             total_winning_price += winner["price"]                       # Accumulate winning prices to compute average later
             winning_prices.append(winner["price"])
         else:
             rounds_without_winner += 1
 
-    avg_revenue = total_revenue / total_rounds if total_rounds > 0 else 0
+    avg_revenue       = total_revenue / total_rounds if total_rounds > 0 else 0
     avg_winning_price = total_winning_price / rounds_with_winner if rounds_with_winner > 0 else 0
 
     results = {
@@ -87,7 +88,8 @@ def simulate_csv(rounds, base_cost=1.0, alpha=10.0):
     return results
 
 
-# ====================== MODE 2 — Strategy Simulation ======================
+# ============================================== MODE 2 — Strategy Simulation ==============================================
+
 
 def simulate_strategies(nb_rounds=500, nb_players=40, base_cost=1.0, alpha=10.0, max_price=99, item_value=100):
     """
@@ -103,36 +105,36 @@ def simulate_strategies(nb_rounds=500, nb_players=40, base_cost=1.0, alpha=10.0,
 
     Returns a dict with the statistics of each strategy.
     """
-    strategy_names = ["random", "cost_aware", "adaptive"]
-    n_strategies   = len(strategy_names)
+    strategy_names    = ["random", "low cost", "adaptive"]
+    nb_strategies     = len(strategy_names)
+    player_strategies = {}                                                  # Dictionary mapping each player to their assigned strategy 
 
-    player_strategies = {}
-    for i in range(1, nb_players + 1):                                       # Assign a strategy to each player (split evenly)
+    for i in range(1, nb_players + 1):                                      # Assign a strategy to each player (split evenly)
         player = f"J{i}"
-        player_strategies[player] = strategy_names[(i - 1) % n_strategies]
+        player_strategies[player] = strategy_names[(i - 1) % nb_strategies]
 
     # Stats trackers per strategy
     stats = {name: {"wins": 0, "total_profit": 0.0, "total_cost": 0.0} for name in strategy_names}
-    total_revenue = 0.0
+    total_revenue  = 0.0
     winner_history = []                                                     # Tracks winning prices across rounds for adaptive strategy
 
     for _ in range(nb_rounds):
-        auction = LowBidAuction(base_cost=base_cost, alpha=alpha)
-        round_bids = {}                                                     # {player: price}
+        auction    = LowBidAuction(base_cost=base_cost, alpha=alpha)
+        round_bids = {}                                                     # Dictionnary of bids for the round
 
         for player, strategy in player_strategies.items():                  # Each player chooses a bid price based on their strategy
             if strategy == "random":
                 price = random_strategy(max_price)
-            elif strategy == "cost_aware":
-                price = cost_aware_strategy(alpha, base_cost, max_price)
+            elif strategy == "low cost":
+                price = low_cost_strategy(alpha, base_cost, max_price)
             else:
                 price = adaptive_strategy(winner_history, max_price)
 
             round_bids[player] = price
             auction.add_bid(player, price)                                  # Add the bid to the auction                         
 
-        winner  = auction.get_winner()
-        revenue = auction.seller_revenue()
+        winner         = auction.get_winner()
+        revenue        = auction.seller_revenue()
         total_revenue += revenue
 
         if winner:
@@ -142,7 +144,7 @@ def simulate_strategies(nb_rounds=500, nb_players=40, base_cost=1.0, alpha=10.0,
             bid_cost         = auction.bid_cost(winning_price)
             profit           = item_value - winning_price - bid_cost
 
-            stats[winning_strategy]["wins"] += 1
+            stats[winning_strategy]["wins"]         += 1
             stats[winning_strategy]["total_profit"] += profit
             winner_history.append(winning_price)
 
@@ -165,39 +167,45 @@ def simulate_strategies(nb_rounds=500, nb_players=40, base_cost=1.0, alpha=10.0,
     return results
 
 
-# ============================= Display helpers =============================
+# ============================================== Display helpers ==============================================
+
 
 def display_csv_results(results):
-    """Print the results of a CSV simulation to the console."""
+    """
+    Print and formats the results of a CSV simulation to the console. They are printed in the terminal
+    and also returned as a string to be displayed in the interface when the "Run CSV Analysis" button is clicked.
+    """
 
-    print("\n=== CSV Analysis Results ===")
-    print(f"Total rounds           : {results['total_rounds']}")
-    print(f"Rounds with winner     : {results['rounds_with_winner']}")
-    print(f"Rounds no winner       : {results['rounds_without_winner']}")
-    print(f"Average seller revenue : {results['avg_seller_revenue']:.2f}")       # Format as percentage with 2 decimal digits
-    print(f"Average winning price  : {results['avg_winning_price']:.2f}")
+    lines = []                                                                      # List of lines to join into the final string to display
+    lines.append("=== CSV Analysis Results ===\n")
+    lines.append(f"Total rounds           : {results['total_rounds']}")
+    lines.append(f"Rounds with winner     : {results['rounds_with_winner']}")
+    lines.append(f"Rounds no winner       : {results['rounds_without_winner']}")
+    lines.append(f"Average seller revenue : {results['avg_seller_revenue']:.2f}€")   # Format  with 2 decimals
+    lines.append(f"Average winning price  : {results['avg_winning_price']:.2f}€")
+
+    text = "\n".join(lines)
+    print(text)
+    return text
 
 def display_strategy_results(results):
-    """Print the results of a strategy simulation to the console."""
+    """
+    Format and prints the results of the strategies simulation. They are printed in the terminal 
+    and also displayed in the interface when the "Run Strategy Simulation" button is clicked.
+    """
 
-    print("\n=== Strategy Simulation Results ===")
-    print(f"Total rounds           : {results['total_rounds']}")
-    print(f"Average seller revenue : {results['avg_seller_revenue']:.2f}")
-    print()
-    for name, data in results["strategies"].items():                             # Loops through each strategy and print its statistics 
-        print(f"Strategy: {name}")
-        print(f" Wins           : {data['wins']}")
-        print(f" Win rate       : {data['win_rate']:.2%}")                      
-        print(f" Average profit : {data['avg_profit']:.2f}")
-        print(f" Average cost   : {data['avg_cost']:.2f}")
-        print()
+    lines = []                                                                    # List of lines to join into the final string to display
+    lines.append(f"=== Strategy Simulation Results ===")
+    lines.append(f"Total rounds       : {results['total_rounds']}")
+    lines.append(f"Avg seller revenue : {results['avg_seller_revenue']:.2f}€\n")
 
+    for name, data in results["strategies"].items():                              # Loops through each strategy and prints its stats
+        lines.append(f"Strategy: {name}")
+        lines.append(f" Wins           : {data['wins']}")
+        lines.append(f" Win rate       : {data['win_rate']:.2%}")
+        lines.append(f" Average profit : {data['avg_profit']:.2f}€")
+        lines.append(f" Average cost   : {data['avg_cost']:.2f}€\n")
 
-# ---------------------------------------------------------------------------
-# Quick self-test
-# ---------------------------------------------------------------------------
-
-if __name__ == "__main__":
-    print("Running strategy simulation (500 rounds)...")
-    results = simulate_strategies(nb_rounds=500)
-    display_strategy_results(results)
+    text = "\n".join(lines)                                                       # Join all lines into a single string to display in the interface
+    print(text)                                                                   # Print the results in the terminal          
+    return text                                                                   # Returns the string to be displayed in the interface
