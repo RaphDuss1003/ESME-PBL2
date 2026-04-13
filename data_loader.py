@@ -139,11 +139,11 @@ def generate_demo_bids(nb_players=40, max_price=99, seed=None):
     Generate a synthetic single-round dataset with nb_players players.
     Prices are drawn uniformly from [0, max_price].
     """
-    random_nd_gen = random.Random(seed)                   # Seed is None so each demo is different
+    random_nb_gen = random.Random(seed)                   # Seed is None so each demo is different
     bids = []
     for i in range(1, nb_players + 1):
         player = f"J{i}"
-        price  = random_nd_gen.randint(0, max_price)
+        price  = random_nb_gen.randint(0, max_price)
         bids.append({"player": player, "price": price})
     return bids
 
