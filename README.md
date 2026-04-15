@@ -1,5 +1,5 @@
 **ESME-PBL2**
-📦 [Loser Wins!]**
+📦 **[Loser Wins!]**
 
 **MVP Status:** \[v1.0]
 
@@ -12,7 +12,7 @@ This application is a **"Lowest Unique Bid Wins"** reverse auction engine develo
 The concept is simple: the winner is not the highest bidder, but the one who submits the **lowest unique bid**.
 
 To ensure seller profitability and prevent spam on low prices, the system integrates a **risk premium** using the formula:
-$bid\_cost(price) = base\_cost + \alpha / (price + 1)$.
+$bid cost(price) = base cost + \alpha / (price + 1)$.
 
 
 ## **🚀 Quick Start (Architect Level: < 60s Setup)**
@@ -54,22 +54,22 @@ The architecture follows a clear separation of responsibilities to ensure testab
 The simulator includes three distinct bidding strategies to model different player behaviors and analyze their performance:
 
 ### 1. **Random Strategy**
-- **Behavior:** Bids a completely random price between `0` and the maximum allowed price.
+- **Behavior:** Bids a completely random price between 0 and the maximum allowed price.
 - **Purpose:** Serves as a baseline to compare against more sophisticated strategies. No logic or planning—just pure chance.
 - **Use Case:** Demonstrates how the auction behaves when bidders have no strategy.
 
 ### 2. **Low-Cost Strategy**
 - **Behavior:**
-  - Avoids bidding at prices with high risk premiums (where the cost formula `base_cost + alpha / (price + 1)` makes low bids expensive).
+  - Avoids bidding at prices with high risk premiums (where the cost formula $base cost + \alpha / (price + 1)$ makes low bids expensive).
   - Focuses on "affordable" prices (those with costs below the median cost of all possible bids).
-  - Favors lower prices within the affordable range, but avoids the highest-cost bids (like `0`).
+  - Favors lower prices within the affordable range, but avoids the highest-cost bids (like 0).
 - **Purpose:** Balances the trade-off between bidding low and keeping the bid cost reasonable.
 - **Use Case:** Simulates cautious bidders who want to win without paying excessive risk premiums.
 
 ### 3. **Adaptive Strategy**
 - **Behavior:**
   - Analyzes the last 10 winning bids from the auction history.
-  - Picks a recent winning price as a target, then adds a small random offset (between `-5` and `5`) to avoid bidding the exact same price.
+  - Picks a recent winning price as a target, then adds a small random offset (between -5 and 5) to avoid bidding the exact same price.
   - If no history exists (e.g., at the start of the auction), it falls back to the **Random Strategy**.
 - **Purpose:** Learns from past auction results to make educated bids near prices that have previously won.
 - **Use Case:** Models strategic bidders who adapt to trends in the auction.
@@ -108,4 +108,4 @@ To verify the engine's functionality:
 
 - **Analytical Dashboard**: Advanced **Matplotlib** graphs to visualize price convergence toward a strategic "equilibrium point."
 
-*Generated as part of the [Advanced Algorithmic 3] Production Deliverables.*
+*Generated as part of the Advanced Algorithmic 3 Production Deliverables.*
