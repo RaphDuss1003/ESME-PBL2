@@ -12,7 +12,7 @@ This application is a **"Lowest Unique Bid Wins"** reverse auction engine develo
 The concept is simple: the winner is not the highest bidder, but the one who submits the **lowest unique bid**.
 
 To ensure seller profitability and prevent spam on low prices, the system integrates a **risk premium** using the formula:
-$bid cost(price) = base cost + \alpha / (price + 1)$.
+$bid \ cost(price) = base \ cost + \alpha / (price + 1)$.
 
 
 ## **🚀 Quick Start (Architect Level: < 60s Setup)**
